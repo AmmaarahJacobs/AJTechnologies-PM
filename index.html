@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Project Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="app">
+    <!-- Mobile Topbar -->
+    <header class="mobile-topbar" id="mobileTopbar">
+      <button class="icon-btn" id="menuToggle" aria-label="Open menu" aria-expanded="false">
+        <span class="icon-line"></span>
+        <span class="icon-line"></span>
+        <span class="icon-line"></span>
+      </button>
+
+      <div class="mobile-brand">
+        <img id="brandLogoMobile" class="brand-logo" alt="Company Logo" />
+        <div class="brand-text">
+          <div class="brand-title">AJ TECHNOLOGIES</div>
+          <div class="brand-subtitle">Project Manager</div>
+        </div>
+      </div>
+
+      <div class="mobile-actions">
+        <button class="btn btn-ghost" id="exportBtnMobile">Export</button>
+        <label class="btn btn-ghost file-btn">
+          Import
+          <input type="file" id="importFileMobile" accept="application/json" hidden />
+        </label>
+      </div>
+    </header>
+
+    <aside class="sidebar" id="sidebar" aria-label="Sidebar navigation">
+      <div class="brand">
+        <img id="brandLogo" class="brand-logo" alt="Company Logo" />
+        <div class="brand-mark" id="brandMarkFallback" aria-hidden="true">AJ</div>
+
+        <div class="brand-text">
+          <div class="brand-title">GoalShift</div>
+          <div class="brand-subtitle">Project Manager</div>
+        </div>
+      </div>
+
+      <nav class="nav" role="navigation" aria-label="Primary">
+        <button class="nav-item active" data-view="dashboard">
+          <span class="nav-dot"></span> Dashboard
+        </button>
+        <button class="nav-item" data-view="projects">
+          <span class="nav-dot"></span> Projects
+        </button>
+        <button class="nav-item" data-view="tasks">
+          <span class="nav-dot"></span> Tasks & Time
+        </button>
+        <button class="nav-item" data-view="finance">
+          <span class="nav-dot"></span> Finance
+        </button>
+        <button class="nav-item" data-view="settings">
+          <span class="nav-dot"></span> Settings
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="mini">
+          <div class="mini-label">Today</div>
+          <div class="mini-value" id="todayStr">—</div>
+        </div>
+        <div class="mini">
+          <div class="mini-label">Active Timer</div>
+          <div class="mini-value" id="activeTimerStr">None</div>
+        </div>
+
+        <div class="sidebar-actions">
+          <button class="btn btn-ghost" id="exportBtn">Export</button>
+          <label class="btn btn-ghost file-btn">
+            Import
+            <input type="file" id="importFile" accept="application/json" hidden />
+          </label>
+        </div>
+      </div>
+    </aside>
+
+    <div class="scrim" id="scrim" aria-hidden="true"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1 id="pageTitle">Dashboard</h1>
+          <p class="muted" id="pageSubtitle">Overview of work, deadlines, time, and finances.</p>
+        </div>
+
+        <div class="topbar-right">
+          <div class="search">
+            <input id="globalSearch" type="search" placeholder="Search projects, tasks, transactions..." />
+          </div>
+          <div class="topbar-actions desktop-only">
+            <button class="btn btn-ghost" id="exportBtnTop">Export</button>
+            <label class="btn btn-ghost file-btn">
+              Import
+              <input type="file" id="importFileTop" accept="application/json" hidden />
+            </label>
+          </div>
+        </div>
+      </header>
+
+      <!-- DASHBOARD -->
+      <section class="view active" id="view-dashboard">
+        <div class="grid grid-4">
+          <div class="card kpi">
+            <div class="kpi-label">Open Projects</div>
+            <div class="kpi-value" id="kpiOpenProjects">0</div>
+            <div class="kpi-foot muted" id="kpiOpenProjectsFoot">—</div>
+          </div>
+
+          <div class="card kpi">
+            <div class="kpi-label">Tasks Due (7 days)</div>
+            <div class="kpi-value" id="kpiDueSoon">0</div>
+            <div class="kpi-foot muted" id="kpiDueSoonFoot">—</div>
+          </div>
+
+          <div class="card kpi">
+            <div class="kpi-label">Time Logged (7 days)</div>
+            <div class="kpi-value" id="kpiTime7d">0h</div>
+            <div class="kpi-foot muted" id="kpiTime7dFoot">—</div>
+          </div>
+
+          <div class="card kpi">
+            <div class="kpi-label">Profit (This Month)</div>
+            <div class="kpi-value" id="kpiProfitMonth">R0</div>
+            <div class="kpi-foot muted" id="kpiProfitMonthFoot">—</div>
+          </div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card" style="margin-top: 10px;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Upcoming Deadlines</div>
+                <div class="muted">Projects and tasks due soon.</div>
+              </div>
+              <button class="btn btn-ghost" data-jump="tasks">Go to Tasks</button>
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Title</th>
+                    <th>Due</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="deadlinesTable"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 10px;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">This Week: Time Logged</div>
+                <div class="muted">Daily total (hours).</div>
+              </div>
+              <button class="btn btn-ghost" data-jump="tasks">Track Time</button>
+            </div>
+            <div class="chart">
+              <canvas id="timeChart" width="800" height="260" aria-label="Time chart"></canvas>
+            </div>
+            <div class="muted small" id="timeChartFoot"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROJECTS -->
+      <section class="view" id="view-projects">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Create Project</div>
+                <div class="muted">Track delivery dates, budget, and status.</div>
+              </div>
+            </div>
+
+            <form id="projectForm" class="form">
+              <div class="row">
+                <div class="field">
+                  <label>Project Name</label>
+                  <input id="projectName" required placeholder="e.g., Website Redesign" />
+                </div>
+                <div class="field">
+                  <label>Client / Department</label>
+                  <input id="projectClient" placeholder="e.g., Acme Holdings" />
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label>Deadline</label>
+                  <input id="projectDeadline" type="date" />
+                </div>
+                <div class="field">
+                  <label>Priority</label>
+                  <select id="projectPriority">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label>Status</label>
+                  <select id="projectStatus">
+                    <option value="active" selected>Active</option>
+                    <option value="on_hold">On Hold</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Budget (optional)</label>
+                  <input id="projectBudget" type="number" min="0" step="0.01" placeholder="e.g., 50000" />
+                </div>
+              </div>
+
+              <div class="field">
+                <label>Notes</label>
+                <textarea id="projectNotes" rows="4" placeholder="Scope, requirements, links, stakeholders..."></textarea>
+              </div>
+
+              <div class="actions">
+                <button class="btn btn-primary" type="submit" id="projectSubmitBtn">Add Project</button>
+                <button class="btn btn-ghost" type="button" id="projectCancelEdit" class="hidden">Cancel Edit</button>
+                <button class="btn btn-ghost" type="button" id="projectFormReset">Clear</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Projects</div>
+                <div class="muted">Review progress and manage status.</div>
+              </div>
+              <div class="chip-row">
+                <select id="projectFilter" class="chip">
+                  <option value="all" selected>All</option>
+                  <option value="active">Active</option>
+                  <option value="on_hold">On Hold</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="list" id="projectList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TASKS & TIME -->
+      <section class="view" id="view-tasks">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Create Task</div>
+                <div class="muted">Track time spent, resources used, and delivery dates.</div>
+              </div>
+            </div>
+
+            <form id="taskForm" class="form">
+              <div class="row">
+                <div class="field">
+                  <label>Task Title</label>
+                  <input id="taskTitle" required placeholder="e.g., Implement client feedback changes" />
+                </div>
+                <div class="field">
+                  <label>Project</label>
+                  <select id="taskProject"></select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label>Due Date</label>
+                  <input id="taskDue" type="date" />
+                </div>
+                <div class="field">
+                  <label>Priority</label>
+                  <select id="taskPriority">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label>Status</label>
+                  <select id="taskStatus">
+                    <option value="todo" selected>To Do</option>
+                    <option value="doing">In Progress</option>
+                    <option value="done">Complete</option>
+                    <option value="blocked">Blocked</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Estimate (hours)</label>
+                  <input id="taskEstimate" type="number" min="0" step="0.25" placeholder="e.g., 4" />
+                </div>
+              </div>
+
+              <div class="field">
+                <label>Resources Used (links/notes)</label>
+                <textarea id="taskResources" rows="3" placeholder="Docs, URLs, tools, assets, references..."></textarea>
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label>Resource Cost (optional)</label>
+                  <input id="taskResourceCost" type="number" min="0" step="0.01" placeholder="e.g., 199.99" />
+                </div>
+                <div class="field">
+                  <label>Tags</label>
+                  <input id="taskTags" placeholder="e.g., frontend, api, testing" />
+                </div>
+              </div>
+
+              <div class="actions">
+                <button class="btn btn-primary" type="submit">Add Task</button>
+                <button class="btn btn-ghost" type="button" id="taskFormReset">Reset</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Tasks & Time Tracking</div>
+                <div class="muted">Start/stop timer, log time, update status.</div>
+              </div>
+              <div class="chip-row">
+                <select id="taskFilter" class="chip">
+                  <option value="all" selected>All</option>
+                  <option value="todo">To Do</option>
+                  <option value="doing">In Progress</option>
+                  <option value="done">Complete</option>
+                  <option value="blocked">Blocked</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="list" id="taskList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FINANCE -->
+      <section class="view" id="view-finance">
+        <div class="grid grid-3">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Finance Summary</div>
+                <div class="muted">Income, expenses, savings, and estimated tax.</div>
+              </div>
+            </div>
+
+            <div class="summary">
+              <div class="summary-row">
+                <div class="muted">Income (Month)</div>
+                <div class="strong" id="sumIncomeMonth">R0</div>
+              </div>
+              <div class="summary-row">
+                <div class="muted">Expenses (Month)</div>
+                <div class="strong" id="sumExpenseMonth">R0</div>
+              </div>
+              <div class="summary-row">
+                <div class="muted">Profit (Month)</div>
+                <div class="strong" id="sumProfitMonth">R0</div>
+              </div>
+              <div class="summary-row">
+                <div class="muted">Savings (Month)</div>
+                <div class="strong" id="sumSavingsMonth">R0</div>
+              </div>
+              <div class="divider"></div>
+              <div class="summary-row">
+                <div class="muted">Tax Rate</div>
+                <div class="strong" id="sumTaxRate">0%</div>
+              </div>
+              <div class="summary-row">
+                <div class="muted">Estimated Tax (Month)</div>
+                <div class="strong" id="sumTaxMonth">R0</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 10px;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Add Transaction</div>
+                <div class="muted">Track income, expenses, and savings.</div>
+              </div>
+            </div>
+
+            <form id="txForm" class="form">
+              <div class="row">
+                <div class="field">
+                  <label>Date</label>
+                  <input id="txDate" type="date" required />
+                </div>
+                <div class="field">
+                  <label>Type</label>
+                  <select id="txType">
+                    <option value="income" selected>Income</option>
+                    <option value="expense">Expense</option>
+                    <option value="savings">Savings</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label>Amount</label>
+                  <input id="txAmount" type="number" min="0" step="0.01" required placeholder="e.g., 1500" />
+                </div>
+                <div class="field" style="min-width: 20px;">
+                  <label>Category</label>
+                  <input id="txCategory" placeholder="e.g., subscription, invoice payment, travel" />
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label>Project (optional)</label>
+                  <select id="txProject"></select>
+                </div>
+                <div class="field" style="min-width: 20px;">
+                  <label>Reference</label>
+                  <input id="txRef" placeholder="Invoice #, notes, link..." />
+                </div>
+              </div>
+
+              <div class="actions">
+                <button class="btn btn-primary" type="submit">Add Transaction</button>
+                <button class="btn btn-ghost" type="button" id="txFormReset">Reset</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card" style="margin-top: 10px;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Tax & Savings Settings</div>
+                <div class="muted">Used for your monthly estimates.</div>
+              </div>
+            </div>
+
+            <form id="financeSettingsForm" class="form">
+              <div class="row">
+                <div class="field">
+                  <label>Tax Rate (%)</label>
+                  <input id="taxRate" type="number" min="0" max="100" step="0.1" placeholder="e.g., 25" />
+                </div>
+                <div class="field">
+                  <label>Monthly Savings Target</label>
+                  <input id="savingsTarget" type="number" min="0" step="0.01" placeholder="e.g., 5000" />
+                </div>
+              </div>
+
+              <div class="actions">
+                <button class="btn btn-primary" type="submit">Save Settings</button>
+                <button class="btn btn-ghost" type="button" id="financeSettingsReset">Reset</button>
+              </div>
+            </form>
+
+            <div class="note muted small">
+              Use “Savings” transactions for intentional saving. Tax is estimated on positive profit.
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 10px;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Transactions</div>
+              <div class="muted">Filter and manage finance history.</div>
+            </div>
+            <div class="chip-row">
+              <select id="txFilter" class="chip">
+                <option value="all" selected>All</option>
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+                <option value="savings">Savings</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Category</th>
+                  <th>Project</th>
+                  <th>Reference</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="txTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="view" id="view-settings">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Brand & General</div>
+                <div class="muted">Logo and general preferences.</div>
+              </div>
+            </div>
+
+            <div class="form">
+              <div class="field">
+                <label>Upload Logo (PNG/JPG/WebP)</label>
+                <input type="file" id="logoFile" accept="image/*" />
+                <div class="muted small">Stored locally in your browser.</div>
+              </div>
+
+              <div class="row">
+                <button class="btn btn-ghost" id="removeLogo">Remove Logo</button>
+                <div></div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="field">
+                <label>Currency Symbol</label>
+                <input id="currencySymbol" placeholder="e.g., R" />
+              </div>
+
+              <div class="row">
+                <button class="btn btn-primary" id="saveGeneral">Save</button>
+                <button class="btn btn-danger" id="wipeData">Wipe All Data</button>
+              </div>
+
+              <div class="note muted small">
+                Wipe removes local data from this browser. Export first if you need a backup.
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Quick Help</div>
+                <div class="muted">How to use the system.</div>
+              </div>
+            </div>
+
+            <div class="help">
+              <ul>
+                <li><b>Projects</b>: delivery-focused work with deadline, priority, budget, status.</li>
+                <li><b>Tasks</b>: attach to projects, track due dates, resources, and time logs.</li>
+                <li><b>Timer</b>: one active task timer at a time. Stopping it creates a time entry.</li>
+                <li><b>Finance</b>: add income/expense/savings transactions and review monthly totals.</li>
+                <li><b>Export/Import</b>: move or back up your data.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer removed intentionally for a more professional, client-facing feel -->
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
